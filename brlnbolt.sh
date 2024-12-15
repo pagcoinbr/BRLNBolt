@@ -341,7 +341,6 @@ EOF"
 sudo chown -R admin:admin /home/admin/.bitcoin
 sudo chmod 750 /home/admin/.bitcoin
 sudo chmod 640 /home/admin/.bitcoin/bitcoin.conf
-ln -s /data/bitcoin /home/admin/.bitcoin
 sudo bash -c "cat <<EOF > /etc/systemd/system/bitcoind.service
 # MiniBolt: systemd unit for bitcoind
 # /etc/systemd/system/bitcoind.service
