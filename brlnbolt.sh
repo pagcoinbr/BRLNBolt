@@ -15,7 +15,6 @@ sudo apt update && sudo apt full-upgrade -y
 }
 
 create_main_dir() {
-  sudo usermod -a -G sudo,adm,cdrom,dip,plugdev,lxd $USER
   [[ ! -d $MAIN_DIR ]] && sudo mkdir $MAIN_DIR
   sudo chown admin:admin $MAIN_DIR
 }
@@ -218,8 +217,31 @@ EOF'
   sudo chmod 750 /run/tor
   sudo systemctl enable lnd
   sudo systemctl start lnd
-  echo "Depois, digite a senha 2x para confirmar e pressione 'n' para criar uma nova cateira, digite o "password" e pressione *enter* para criar uma nova carteira."
+  echo "###############################################################################################"
+  echo "Agora Você irá criar sua senha, digite a senha 3x para confirmar e pressione 'n' para criar uma nova cateira ou "y" para recuperar uma carteira antiga com 24 palavras, digite o "password" caso queira proteger sua frade de 24 palavras com uma senha e pressione *enter* para criar uma nova carteira."
+  echo "AVISO!: Anote sua frase de 24 palavras com ATENÇÃO, AGORA! Esta frase não pode ser recuperada se não anotada agora. Caso contrário, você pode perder seus fundos. A senha deve ter pelo menos 8 caracteres."
+  echo "###############################################################################################"
+  while true; do
+    read -p "Escolha uma senha para a carteira Lightning: " password
+    echo
+    if [ ${#password} -ge 8 ]; then
+      break
+    else
+      echo "A senha deve ter pelo menos 8 caracteres. Tente novamente."
+    fi
+  done
   lncli create
+  while true; do
+    read -p "Digite 'yes' para continuar a instalação do seu nó lightning após anotar a frase de 24 palavras: " confirm
+    case $confirm in
+      [Yy][Ee][Ss])
+        break
+        ;;
+      *)
+        echo "Por favor, digite 'yes' para continuar."
+        ;;
+    esac
+  done
   }
 
 install_bitcoin () {
@@ -332,9 +354,9 @@ After=network-online.target
 [Service]
 ExecStart=/usr/local/bin/bitcoind -daemon \
                                   -pid=/run/bitcoind/bitcoind.pid \
-                                  -conf=/home/$USER/.bitcoin/bitcoin.conf \
-                                  -datadir=/home/$USER/.bitcoin \
-                                  -startupnotify="chmod g+r /home/$USER/.bitcoin/.cookie"
+                                  -conf=/data/bitcoin/bitcoin.conf \
+                                  -datadir=/data/bitcoin \
+                                  -startupnotify="chmod g+r /data/bitcoin/.cookie"
 # Process management
 ####################
 Type=exec
@@ -389,12 +411,12 @@ fi
   sudo chown -R $USER:$USER /data/lnd
   sudo chmod -R 755 /data/lnd
   export BOS_DEFAULT_LND_PATH=/data/lnd
-  mkdir -p ~/.bos/$nome_do_seu_node
+  mkdir -p ~/.bos/$alias
   base64 -w0 /data/lnd/tls.cert > /data/lnd/tls.cert.base64
   base64 -w0 /data/lnd/data/chain/bitcoin/mainnet/admin.macaroon > /data/lnd/data/chain/bitcoin/mainnet/admin.macaroon.base64
   cert_base64=$(cat /data/lnd/tls.cert.base64)
   macaroon_base64=$(cat /data/lnd/data/chain/bitcoin/mainnet/admin.macaroon.base64)
-  bash -c "cat <<EOF > ~/.bos/$nome_do_seu_node/credentials.json
+  bash -c "cat <<EOF > ~/.bos/$alias/credentials.json
 {
   "cert": "$cert_base64",
   "macaroon": "$macaroon_base64",
@@ -543,21 +565,10 @@ sudo systemctl start lndg.service
 
 
 main() {
-    read -p "Digite o nome do seu node (sem tags como | BRLN): " nome_do_seu_node
 read -p "Digite a senha para ThunderHub: " senha
 read -p "Digite o alias: " alias
 read -p "Digite o bitcoind.rpcuser: " bitcoind_rpcuser
 read -p "Digite o bitcoind.rpcpass: " bitcoind_rpcpass
-echo "AVISO: Salve a senha que você escolher para a carteira Lightning. Caso contrário, você pode perder seus fundos. A senha deve ter pelo menos 8 caracteres."
-  while true; do
-    read -p "Escolha uma senha para a carteira Lightning: " password
-    echo
-    if [ ${#password} -ge 8 ]; then
-      break
-    else
-      echo "A senha deve ter pelo menos 8 caracteres. Tente novamente."
-    fi
-  done
     update_and_upgrade
     create_main_dir
     configure_ufw
@@ -573,7 +584,9 @@ echo "AVISO: Salve a senha que você escolher para a carteira Lightning. Caso co
 }
 
 menu() {
-  echo "Escolha uma opção:"
+  echo "Bem vindo à instalação de node lightning personalizado da BRLN!"
+  echo "Este script irá instalar um Nó Lightning Standalone e o Bitcoin Core. Além disso ele vem equipado com ferramentas de administração como o ThunderHub, Balance of Satoshis e o LNDG."
+  echo "Escolha uma opção: "1" para iniciar a instalação"
   echo "1) Instalação do BRLNBolt"
   echo "0) Sair"
   read -p "Opção: " option
