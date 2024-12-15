@@ -353,9 +353,9 @@ After=network-online.target
 [Service]
 ExecStart=/usr/local/bin/bitcoind -daemon \
                                   -pid=/run/bitcoind/bitcoind.pid \
-                                  -conf=/data/bitcoin/bitcoin.conf \
-                                  -datadir=/data/bitcoin \
-                                  -startupnotify="chmod g+r /data/bitcoin/.cookie"
+                                  -conf=/home/admin/.bitcoin/bitcoin.conf \
+                                  -datadir=/home/admin/.bitcoin \
+                                  -startupnotify="chmod g+r /home/admin/.bitcoin/.cookie"
 # Process management
 ####################
 Type=exec
