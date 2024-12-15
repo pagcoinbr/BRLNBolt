@@ -15,6 +15,7 @@ sudo apt update && sudo apt full-upgrade -y
 }
 
 create_main_dir() {
+  sudo usermod -a -G sudo,adm,cdrom,dip,plugdev,lxd $USER
   [[ ! -d $MAIN_DIR ]] && sudo mkdir $MAIN_DIR
   sudo chown admin:admin $MAIN_DIR
 }
