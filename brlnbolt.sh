@@ -75,8 +75,6 @@ configure_lnd() {
   sudo mkdir -p $LN_DDIR
   sudo chown -R admin:admin $LN_DDIR
   ln -s $LN_DDIR /home/admin/.lnd
-  echo "$password" > $LN_DDIR/password.txt
-  chmod 600 $LN_DDIR/password.txt
   cat << EOF > $LN_DDIR/lnd.conf
 # BRLN: lnd configuration
 # /data/lnd/lnd.conf
@@ -215,13 +213,7 @@ EOF'
   sudo chmod -R g+X $LN_DDIR
   sudo chmod 640 /run/tor/control.authcookie
   sudo chmod 750 /run/tor
-  sudo systemctl enable lnd
-  sudo systemctl start lnd
-  echo "###############################################################################################"
-  echo "Agora Você irá criar sua senha, digite a senha 3x para confirmar e pressione 'n' para criar uma nova cateira ou "y" para recuperar uma carteira antiga com 24 palavras, digite o "password" caso queira proteger sua frade de 24 palavras com uma senha e pressione *enter* para criar uma nova carteira."
-  echo "AVISO!: Anote sua frase de 24 palavras com ATENÇÃO, AGORA! Esta frase não pode ser recuperada se não anotada agora. Caso contrário, você pode perder seus fundos. A senha deve ter pelo menos 8 caracteres."
-  echo "###############################################################################################"
-  while true; do
+    while true; do
     read -p "Escolha uma senha para a carteira Lightning: " password
     echo
     if [ ${#password} -ge 8 ]; then
@@ -230,6 +222,14 @@ EOF'
       echo "A senha deve ter pelo menos 8 caracteres. Tente novamente."
     fi
   done
+  echo "$password" > $LN_DDIR/password.txt
+  chmod 600 $LN_DDIR/password.txt
+  sudo systemctl enable lnd
+  sudo systemctl start lnd
+  echo "###############################################################################################"
+  echo "Agora Você irá criar sua senha, digite a senha 3x para confirmar e pressione 'n' para criar uma nova cateira ou "y" para recuperar uma carteira antiga com 24 palavras, digite o "password" caso queira proteger sua frade de 24 palavras com uma senha e pressione *enter* para criar uma nova carteira."
+  echo "AVISO!: Anote sua frase de 24 palavras com ATENÇÃO, AGORA! Esta frase não pode ser recuperada se não anotada agora. Caso contrário, você pode perder seus fundos. A senha deve ter pelo menos 8 caracteres."
+  echo "###############################################################################################"
   lncli create
   while true; do
     read -p "Digite 'yes' para continuar a instalação do seu nó lightning após anotar a frase de 24 palavras: " confirm
